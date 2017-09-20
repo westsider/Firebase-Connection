@@ -75,7 +75,7 @@ namespace Firebase_Connection
 
             System.Threading.Thread.Sleep(1000);
 
-            // remove Duplicates
+            // remove duplicates
             var sr = new StreamReader(File.OpenRead(path));
             var sw = new StreamWriter(File.OpenWrite(@"C:\Users\MBPtrader\Documents\FireBase\PriceData_Out.csv"));
             var lines = new HashSet<int>();
@@ -93,11 +93,13 @@ namespace Firebase_Connection
             sw.Close();
             sr.Close();
 
-            //MARK: - TODO Consider sorting Date so its consecutive on mutiple loads
+            //MARK: - TODO Consider sorting Date so its consecutive on mutiple loads - remove duplicate times
 
             //MARK: - TODO Convert to JSON
 
             //MARK: - TODO Upload to Firebase
+
+            //MARK: - TODO Universal filepath to documents
 
         }
 
