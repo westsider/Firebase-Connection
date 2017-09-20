@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.IO;
 
 
+
 namespace Firebase_Connection
 {
 
@@ -65,6 +66,24 @@ namespace Firebase_Connection
             watcher.EnableRaisingEvents = true;
         }
 
+        /*
+         * https://mtdash01.firebaseio.com/
+
+        {
+            "rules": {
+            ".read": "auth != null",
+            ".write": "auth != null"
+            }
+        }
+        */
+
+        public void authFireBase()
+        {
+           
+        }
+
+
+
         public static void CreateJsonFromCSV()
         {
 
@@ -73,7 +92,7 @@ namespace Firebase_Connection
             string path = @"C:\Users\MBPtrader\Documents\FireBase\PriceData.csv";
             //Read the csv file, and then use System.IO.File.ReadAllLines to read the JSON String format for each line 
 
-            System.Threading.Thread.Sleep(1000);
+            System.Threading.Thread.Sleep(2000);
 
             // remove duplicates
             var sr = new StreamReader(File.OpenRead(path));
