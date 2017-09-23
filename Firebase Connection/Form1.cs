@@ -8,7 +8,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
-
+using Firebase.Database;
+using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Net;
 
 
 namespace Firebase_Connection
@@ -22,10 +25,13 @@ namespace Firebase_Connection
         {
             InitializeComponent();
             // CreateJsonFromCSV();
+
+            postToFireBase();
+
             try
             {
                 string dirName = @"C:\Users\MBPtrader\Documents\FireBase";
-                CreateFileWatcher(dirName);
+                //CreateFileWatcher(dirName);
                 //CreateJsonFromCSV();
             }
             catch (Exception ex)
@@ -39,20 +45,20 @@ namespace Firebase_Connection
             //[ ]   delete prior fire base file? decide on program flow
         }
 
-        
+
         //   File watcher magic
         public void CreateFileWatcher(string path)
         {
-            
+
             watcher.Path = path;
-            watcher.NotifyFilter =  NotifyFilters.LastWrite;
+            watcher.NotifyFilter = NotifyFilters.LastWrite;
             watcher.Filter = "*.*";
             // Add event handlers.
             watcher.Changed += new FileSystemEventHandler(OnChanged);
             //watcher.Created += new FileSystemEventHandler(OnChanged);
             //watcher.Deleted += new FileSystemEventHandler(OnChanged);
             // Begin watching.
-            watcher.EnableRaisingEvents = true; 
+            watcher.EnableRaisingEvents = true;
         }
 
         private void OnChanged(object source, FileSystemEventArgs e)
@@ -61,7 +67,7 @@ namespace Firebase_Connection
             counter = counter + 1;
             Console.WriteLine("File has changed " + counter + " times");
             //MessageBox.Show("File Change");
-            CreateJsonFromCSV();
+            // CreateJsonFromCSV();
             System.Threading.Thread.Sleep(2000);
             watcher.EnableRaisingEvents = true;
         }
@@ -69,20 +75,82 @@ namespace Firebase_Connection
         /*
          * https://mtdash01.firebaseio.com/
 
+        changed to no auth from:
         {
             "rules": {
             ".read": "auth != null",
             ".write": "auth != null"
             }
         }
+        To publish to firebase like this without auth, change your database > rules in firebase to  
+        {
+          "rules": {
+            ".read": "auth == null",
+            ".write": "auth == null"
+            }
+        }﻿
+        installed FirebaseDatabase.net
+        https://github.com/step-up-labs/firebase-database-dotnet
+        installed FirebaseAuthentication.net
+        https://github.com/step-up-labs/firebase-authentication-dotnet
+
         */
 
-        public void authFireBase()
+        public static string csvToJson()
         {
-           
+            string date = "yyyy:MM:dd";
+            double open = 100.00;
+            double high = 100.00;
+            double low = 100.00;
+            double close = 100.00;
+
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(new
+            {
+
+                Date = date,
+                Open = open,
+                High = high,
+                Low = low,
+                Close = close
+
+            });
+
+            return json;
+
         }
+ 
+        public static void postToFireBase()
+        {
+            // while (true)
+            //{
+            //DateTime date = DateTime.Now;
+            //string Date = date.ToString("yyyy:MM:dd");
+            //string Time = date.ToString("HH:mm:ss");
 
+            //var json = Newtonsoft.Json.JsonConvert.SerializeObject(new
+            //{
 
+            //    Name = Time,
+            //    Value = Date,
+
+            //});
+
+            var json = csvToJson();
+
+            var myFirebase = "https://mtdash01.firebaseio.com/.json";
+
+            var request = WebRequest.CreateHttp(myFirebase);
+
+            request.Method = "POST";
+            request.ContentType = "application/json";
+            var buffer = Encoding.UTF8.GetBytes(json);
+            request.ContentLength = buffer.Length;
+            request.GetRequestStream().Write(buffer, 0, buffer.Length);
+            var response = request.GetResponse();
+            json = (new StreamReader(response.GetResponseStream())).ReadToEnd();
+
+            //}
+        }
 
         public static void CreateJsonFromCSV()
         {
