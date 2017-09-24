@@ -12,7 +12,7 @@ using Firebase.Database;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Net;
-
+using Newtonsoft.Json.Linq;
 
 namespace Firebase_Connection
 {
@@ -24,14 +24,11 @@ namespace Firebase_Connection
         public Form1()
         {
             InitializeComponent();
-            // CreateJsonFromCSV();
-
-            postToFireBase();
 
             try
             {
                 string dirName = @"C:\Users\MBPtrader\Documents\FireBase";
-                //CreateFileWatcher(dirName);
+                CreateFileWatcher(dirName);
                 //CreateJsonFromCSV();
             }
             catch (Exception ex)
@@ -39,14 +36,9 @@ namespace Firebase_Connection
                 MessageBox.Show(ex.ToString(), "File Import Error");
                 Console.WriteLine("Error ", ex);
             }
-            //[ ] if file  changed:
-            //[ ]   convert file to json
-            //[ ]   send to firebase
-            //[ ]   delete prior fire base file? decide on program flow
         }
 
-
-        //   File watcher magic
+        //MARK: - File Watcher
         public void CreateFileWatcher(string path)
         {
 
@@ -67,96 +59,17 @@ namespace Firebase_Connection
             counter = counter + 1;
             Console.WriteLine("File has changed " + counter + " times");
             //MessageBox.Show("File Change");
-            // CreateJsonFromCSV();
+            
+           // System.Threading.Thread.Sleep(2000);
+            RemoveDuplicatesJsonFromCSV();
             System.Threading.Thread.Sleep(2000);
+            JsonArrayfromCsv();
             watcher.EnableRaisingEvents = true;
         }
 
-        /*
-         * https://mtdash01.firebaseio.com/
-
-        changed to no auth from:
+        public static void RemoveDuplicatesJsonFromCSV()
         {
-            "rules": {
-            ".read": "auth != null",
-            ".write": "auth != null"
-            }
-        }
-        To publish to firebase like this without auth, change your database > rules in firebase to  
-        {
-          "rules": {
-            ".read": "auth == null",
-            ".write": "auth == null"
-            }
-        }﻿
-        installed FirebaseDatabase.net
-        https://github.com/step-up-labs/firebase-database-dotnet
-        installed FirebaseAuthentication.net
-        https://github.com/step-up-labs/firebase-authentication-dotnet
-
-        */
-
-        public static string csvToJson()
-        {
-            string date = "yyyy:MM:dd";
-            double open = 100.00;
-            double high = 100.00;
-            double low = 100.00;
-            double close = 100.00;
-
-            var json = Newtonsoft.Json.JsonConvert.SerializeObject(new
-            {
-
-                Date = date,
-                Open = open,
-                High = high,
-                Low = low,
-                Close = close
-
-            });
-
-            return json;
-
-        }
- 
-        public static void postToFireBase()
-        {
-            // while (true)
-            //{
-            //DateTime date = DateTime.Now;
-            //string Date = date.ToString("yyyy:MM:dd");
-            //string Time = date.ToString("HH:mm:ss");
-
-            //var json = Newtonsoft.Json.JsonConvert.SerializeObject(new
-            //{
-
-            //    Name = Time,
-            //    Value = Date,
-
-            //});
-
-            var json = csvToJson();
-
-            var myFirebase = "https://mtdash01.firebaseio.com/.json";
-
-            var request = WebRequest.CreateHttp(myFirebase);
-
-            request.Method = "POST";
-            request.ContentType = "application/json";
-            var buffer = Encoding.UTF8.GetBytes(json);
-            request.ContentLength = buffer.Length;
-            request.GetRequestStream().Write(buffer, 0, buffer.Length);
-            var response = request.GetResponse();
-            json = (new StreamReader(response.GetResponseStream())).ReadToEnd();
-
-            //}
-        }
-
-        public static void CreateJsonFromCSV()
-        {
-
             // Not reading csv file
-
             string path = @"C:\Users\MBPtrader\Documents\FireBase\PriceData.csv";
             //Read the csv file, and then use System.IO.File.ReadAllLines to read the JSON String format for each line 
 
@@ -179,15 +92,81 @@ namespace Firebase_Connection
             sw.Flush();
             sw.Close();
             sr.Close();
+        }
 
-            //MARK: - TODO Consider sorting Date so its consecutive on mutiple loads - remove duplicate times
+        //MARK: - TODO read edited csv and make json array
+        public static void JsonArrayfromCsv()
+        {
+            System.Threading.Thread.Sleep(1000);
+            string path = @"C:\Users\MBPtrader\Documents\FireBase\PriceData_Out.csv";
 
-            //MARK: - TODO Convert to JSON
+            var fullFile = System.IO.File.ReadAllLines(path);
 
-            //MARK: - TODO Upload to Firebase
+            foreach (string row in fullFile)
+            {
+                Console.WriteLine(row);
+                string[] words = row.Split(',');
 
-            //MARK: - TODO Universal filepath to documents
+                Console.WriteLine(words[0]);
+                Console.WriteLine(words[1]);
+                Console.WriteLine(words[2]);
+                Console.WriteLine(words[3]);
+                Console.WriteLine(words[4]);
 
+                // trouble convering double
+                //var open = Convert.ToDouble(words[1]);
+                //var opens = Double(open);
+
+                var json = rowToJson(date: words[0], open: Convert.ToDouble(words[1]), high: Convert.ToDouble(words[2]),
+                    low: Convert.ToDouble(words[3]), close: Convert.ToDouble(words[4]));
+                Console.WriteLine("Here is the json");
+                Console.WriteLine(json);
+
+                // next make a json array
+
+            }
+           
+
+
+        }
+
+        //MARK: -  Convert to JSON
+        public static string rowToJson(string date, double open, double high, double low, double close)
+        {
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(new
+            {
+                Date = date,
+                Open = open,
+                High = high,
+                Low = low,
+                Close = close
+            });
+
+            return json;
+        }
+
+        private void createJsonArray()
+        {
+            JArray array = new JArray();
+            array.Add("Manual text");
+        }
+
+        //MARK: -  Upload to Firebase
+        public static void postToFireBase()
+        {
+            var json = rowToJson(date: "", open: 100, high: 200, low: 50, close: 150);
+
+            var myFirebase = "https://mtdash01.firebaseio.com/.json";
+
+            var request = WebRequest.CreateHttp(myFirebase);
+
+            request.Method = "POST";
+            request.ContentType = "application/json";
+            var buffer = Encoding.UTF8.GetBytes(json);
+            request.ContentLength = buffer.Length;
+            request.GetRequestStream().Write(buffer, 0, buffer.Length);
+            var response = request.GetResponse();
+            json = (new StreamReader(response.GetResponseStream())).ReadToEnd();
         }
 
         private async void theTimer()
@@ -195,7 +174,26 @@ namespace Firebase_Connection
             Console.WriteLine("Timer Start");
             await Task.Delay(3000);
             Console.WriteLine("Timer End");
-
         }
+        //MARK: - TODO Consider sorting Date so its consecutive on mutiple loads - remove duplicate times
+        //MARK: - TODO Universal filepath to documents
     }
 }
+
+/*
+ * https://mtdash01.firebaseio.com/
+changed to no auth from:
+{
+    "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null"
+    }
+}
+To publish to firebase like this without auth, change your database > rules in firebase to  
+{
+  "rules": {
+    ".read": "auth == null",
+    ".write": "auth == null"
+    }
+}﻿
+*/
