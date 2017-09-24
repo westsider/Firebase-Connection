@@ -63,7 +63,11 @@ namespace Firebase_Connection
            // System.Threading.Thread.Sleep(2000);
             RemoveDuplicatesJsonFromCSV();
             System.Threading.Thread.Sleep(2000);
-            JsonArrayfromCsv();
+            var jsonArray = JsonArrayfromCsv();
+
+            System.Threading.Thread.Sleep(2000);
+            postToFireBase(jsonArray: jsonArray);
+
             watcher.EnableRaisingEvents = true;
         }
 
@@ -95,8 +99,10 @@ namespace Firebase_Connection
         }
 
         //MARK: - TODO read edited csv and make json array
-        public static void JsonArrayfromCsv()
+        public static JArray JsonArrayfromCsv()
         {
+            JArray array = new JArray();
+
             System.Threading.Thread.Sleep(1000);
             string path = @"C:\Users\MBPtrader\Documents\FireBase\PriceData_Out.csv";
 
@@ -107,27 +113,14 @@ namespace Firebase_Connection
                 Console.WriteLine(row);
                 string[] words = row.Split(',');
 
-                Console.WriteLine(words[0]);
-                Console.WriteLine(words[1]);
-                Console.WriteLine(words[2]);
-                Console.WriteLine(words[3]);
-                Console.WriteLine(words[4]);
-
-                // trouble convering double
-                //var open = Convert.ToDouble(words[1]);
-                //var opens = Double(open);
-
                 var json = rowToJson(date: words[0], open: Convert.ToDouble(words[1]), high: Convert.ToDouble(words[2]),
                     low: Convert.ToDouble(words[3]), close: Convert.ToDouble(words[4]));
-                Console.WriteLine("Here is the json");
-                Console.WriteLine(json);
-
+   
                 // next make a json array
-
+                array.Add(json);
             }
-           
-
-
+            Console.WriteLine(array);
+            return array;
         }
 
         //MARK: -  Convert to JSON
@@ -152,8 +145,10 @@ namespace Firebase_Connection
         }
 
         //MARK: -  Upload to Firebase
-        public static void postToFireBase()
+        public static void postToFireBase(JArray jsonArray)
         {
+            // TODO: Convert jArray into something I can post to firebase!
+
             var json = rowToJson(date: "", open: 100, high: 200, low: 50, close: 150);
 
             var myFirebase = "https://mtdash01.firebaseio.com/.json";
