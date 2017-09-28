@@ -68,9 +68,9 @@
             this.lastUpdatelabel.Location = new System.Drawing.Point(25, 103);
             this.lastUpdatelabel.Name = "lastUpdatelabel";
             this.lastUpdatelabel.Padding = new System.Windows.Forms.Padding(5);
-            this.lastUpdatelabel.Size = new System.Drawing.Size(244, 42);
+            this.lastUpdatelabel.Size = new System.Drawing.Size(239, 42);
             this.lastUpdatelabel.TabIndex = 2;
-            this.lastUpdatelabel.Text = "January 10, 2017";
+            this.lastUpdatelabel.Text = "No Update, 2017";
             // 
             // Form1
             // 

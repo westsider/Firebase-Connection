@@ -31,50 +31,84 @@ namespace Firebase_Connection
         {
             InitializeComponent();
 
-            var dirName = checkForDirectory();
-
             //MARK: - TODO - last file time to UI
-            //lastUpdatelabel.Text = update;
+            lastUpdatelabel.Text = update;
 
+            string dirName = Task.Run(async () => { return CheckForDirectory(); }).Result;
+
+            string astring = Task.Run(async () => { return YourAsyncMethod(); }).Result;
+
+            //MARK: - TODO - rename static path vars
+            //MARK: - TODO - use completion handlers
+            //try
+            //{
+            //    CreateFileWatcher(publicPath);
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show(ex.ToString(), "File Watcher Error");
+            //    Console.WriteLine("File Watcher Error ", ex);
+            //}
+        }
+
+        private string CheckForDirectory()
+        {
+            Console.WriteLine("\nChecking for directory");
+            /// check to see if Firebase Dir exists
+            bool folderExists = Directory.Exists(systemPath + @"\Firebase");
+                Console.WriteLine("path to documents: " + systemPath + " Does Firebase folder exists? " + folderExists);
+
+                /// if not create the directory
+                if (!folderExists)
+                {
+                    Console.WriteLine("creating directory... " + systemPath + @"\Firebase");
+                    Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Firebase"));
+                }
+                else
+                {
+                    Console.WriteLine("found diretory... " + systemPath + @"\Firebase");
+                }
+
+                dirNameLable.Text = systemPath + @"\Firebase";
+                //System.Threading.Thread.Sleep(1000);
+                Console.WriteLine("Directory check finished\n");
+                return systemPath + @"\Firebase";
+        }
+
+        private string YourAsyncMethod()
+        {
+            Console.WriteLine("In next Function");
+            return "Next Function Completed";
+        }
+
+        public void deleteFirebase()
+        {
             try
             {
-                CreateFileWatcher(publicPath);
-                //CreateJsonFromCSV();
+                Console.WriteLine("Start Delete");
+                var myFirebase = "https://mtdash01.firebaseio.com/.json";
+                var request = WebRequest.CreateHttp(myFirebase);
+                request.Method = "DELETE";
+                request.ContentType = "application/json";
+                var response = request.GetResponse();
+                System.Threading.Thread.Sleep(2000);
+                Console.WriteLine("Finish Delete");
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), "File Import Error");
-                Console.WriteLine("Error ", ex);
+                MessageBox.Show(ex.ToString(), "File Delete Error");
+                Console.WriteLine("File Delete Error ", ex);
             }
-        }
+            
 
+        }
         public void SetTextboxTextSafe(string result)
         {
+            Console.WriteLine("\nCalling SetTetBox " + result);
             lastUpdatelabel.Text = result.ToString();
         }
 
-        public string checkForDirectory()
-        {
 
-            /// check to see if Firebase Dir exists
-            bool folderExists = Directory.Exists(systemPath + @"\Firebase");
-            Console.WriteLine("\npath to documents: " + systemPath + " Does Firebase folder exists? " + folderExists);
-
-            /// if not create the directory
-            if (!folderExists)
-            {
-                Console.WriteLine("creating directory... " + systemPath + @"\Firebase");
-                Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Firebase"));
-            }
-            else
-            {
-                Console.WriteLine("found diretory... " + systemPath + @"\Firebase");
-            }
-
-            dirNameLable.Text = systemPath + @"\Firebase";
-
-            return systemPath + @"\Firebase";
-        }
 
         //MARK: - File Watcher
         public void CreateFileWatcher(string path)
@@ -89,6 +123,7 @@ namespace Firebase_Connection
 
         private void OnChanged(object source, FileSystemEventArgs e)
         {
+            deleteFirebase();
             watcher.EnableRaisingEvents = false;
             counter = counter + 1;
             Console.WriteLine("File has changed " + counter + " times");
@@ -107,23 +142,34 @@ namespace Firebase_Connection
         {
             System.Threading.Thread.Sleep(2000);
 
-            // remove duplicates
-            var sr = new StreamReader(File.OpenRead(path + @"\PriceData.csv"));
-            var sw = new StreamWriter(File.OpenWrite(path + @"\PriceData_Out.csv"));
-            var lines = new HashSet<int>();
-            while (!sr.EndOfStream)
+            try
             {
-                string line = sr.ReadLine();
-                int hc = line.GetHashCode();
-                if (lines.Contains(hc))
-                    continue;
+                var sr = new StreamReader(File.OpenRead(path + @"\PriceData.csv"));
+                System.Threading.Thread.Sleep(1000);
+                var sw = new StreamWriter(File.OpenWrite(path + @"\PriceData_Out.csv"));
+                var lines = new HashSet<int>();
+                while (!sr.EndOfStream)
+                {
+                    string line = sr.ReadLine();
+                    int hc = line.GetHashCode();
+                    if (lines.Contains(hc))
+                        continue;
 
-                lines.Add(hc);
-                sw.WriteLine(line);
+                    lines.Add(hc);
+                    sw.WriteLine(line);
+                }
+                sw.Flush();
+                sw.Close();
+                sr.Close();
             }
-            sw.Flush();
-            sw.Close();
-            sr.Close();
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "File Read / Write Error\nRemoveDuplicatesJsonFromCSV");
+                Console.WriteLine("Error ", ex);
+            }
+
+            
+            
         }
 
         //MARK: -  Upload to Firebase
@@ -191,6 +237,8 @@ namespace Firebase_Connection
                 newRow["signal"] = "signal";
                 table.Rows.Add(newRow);
 
+                //Form1 frm1 = new Form1();
+                //frm1.SetTextboxTextSafe(words[0]);
                 //SetTextboxTextSafe(result: words[0]);
             }
 
@@ -199,7 +247,9 @@ namespace Firebase_Connection
             string json = JsonConvert.SerializeObject(dataSet, Formatting.Indented);
             
             Console.WriteLine(json);
-            
+
+            //SetTextboxTextSafe(result: "");
+
             return json;
         }
     }
@@ -221,4 +271,12 @@ To publish to firebase like this without auth, change your database > rules in f
     ".write": "auth == null"
     }
 }﻿
+
+ To publish without Auth and read in iOS with Auth
+{
+  "rules": {
+            ".read": true,
+            ".write": "auth == null"
+            }
+}
 */
