@@ -22,14 +22,26 @@ namespace Firebase_Connection
     {
         public int counter;
         FileSystemWatcher watcher = new FileSystemWatcher();
+        public string systemPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        public string publicPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Firebase";
+        public string update = "No Update Yet";
+
         public Form1()
         {
             InitializeComponent();
-            
+
+            var dirName = checkForDirectory();
+
+            //MARK: - TODO - dirName to UI
+            //MARK: - TODO - last file time to UI
+            //lastUpdatelabel.Text = update;
+
             try
             {
-                string dirName = @"C:\Users\MBPtrader\Documents\FireBase";
-                CreateFileWatcher(dirName);
+                //string dirName = @"C:\Users\MBPtrader\Documents\FireBase";
+                
+
+                CreateFileWatcher(publicPath);
                 //CreateJsonFromCSV();
             }
             catch (Exception ex)
@@ -39,18 +51,42 @@ namespace Firebase_Connection
             }
         }
 
+        public void SetTextboxTextSafe(string result)
+        {
+            lastUpdatelabel.Text = result.ToString();
+        }
+
+        public string checkForDirectory()
+        {
+
+            /// check to see if Firebase Dir exists
+            bool folderExists = Directory.Exists(systemPath + @"\Firebase");
+            Console.WriteLine("\npath to documents: " + systemPath + " Does Firebase folder exists? " + folderExists);
+
+            /// if not create the directory
+            if (!folderExists)
+            {
+                Console.WriteLine("creating directory... " + systemPath + @"\Firebase");
+                Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Firebase"));
+            }
+            else
+            {
+                Console.WriteLine("found diretory... " + systemPath + @"\Firebase");
+            }
+
+            dirNameLable.Text = systemPath + @"\Firebase";
+
+            return systemPath + @"\Firebase";
+        }
+
         //MARK: - File Watcher
         public void CreateFileWatcher(string path)
         {
-
+            Console.WriteLine("\nCreateing FileWatcher for... " + publicPath);
             watcher.Path = path;
             watcher.NotifyFilter = NotifyFilters.LastWrite;
             watcher.Filter = "*.*";
-            // Add event handlers.
             watcher.Changed += new FileSystemEventHandler(OnChanged);
-            //watcher.Created += new FileSystemEventHandler(OnChanged);
-            //watcher.Deleted += new FileSystemEventHandler(OnChanged);
-            // Begin watching.
             watcher.EnableRaisingEvents = true;
         }
 
@@ -61,7 +97,7 @@ namespace Firebase_Connection
             Console.WriteLine("File has changed " + counter + " times");
             System.Threading.Thread.Sleep(1000);
             Console.WriteLine("Removing duplicates...");
-            RemoveDuplicatesJsonFromCSV();
+            RemoveDuplicatesJsonFromCSV(path: publicPath);
             System.Threading.Thread.Sleep(1000);
             Console.WriteLine("serialize datatable...");
             var dataSet = serializeDataTable();
@@ -70,17 +106,17 @@ namespace Firebase_Connection
             watcher.EnableRaisingEvents = true;
         }
 
-        public static void RemoveDuplicatesJsonFromCSV()
+        public static void RemoveDuplicatesJsonFromCSV(string path)
         {
             // Not reading csv file
-            string path = @"C:\Users\MBPtrader\Documents\FireBase\PriceData.csv";
+            //string path = @"C:\Users\MBPtrader\Documents\FireBase\PriceData.csv";
             //Read the csv file, and then use System.IO.File.ReadAllLines to read the JSON String format for each line 
 
             System.Threading.Thread.Sleep(2000);
 
             // remove duplicates
-            var sr = new StreamReader(File.OpenRead(path));
-            var sw = new StreamWriter(File.OpenWrite(@"C:\Users\MBPtrader\Documents\FireBase\PriceData_Out.csv"));
+            var sr = new StreamReader(File.OpenRead(path + @"\PriceData.csv"));
+            var sw = new StreamWriter(File.OpenWrite(path + @"\PriceData_Out.csv"));
             var lines = new HashSet<int>();
             while (!sr.EndOfStream)
             {
@@ -130,6 +166,7 @@ namespace Firebase_Connection
 
             DataColumn itemColumn0 = new DataColumn("date");
             table.Columns.Add(itemColumn0);
+            
 
             DataColumn itemColumn1 = new DataColumn("open");
             table.Columns.Add(itemColumn1);
@@ -149,7 +186,7 @@ namespace Firebase_Connection
             dataSet.Tables.Add(table);
 
             // get csv
-            string path = @"C:\Users\MBPtrader\Documents\FireBase\PriceData_Out.csv";
+   string path = @"C:\Users\MBPtrader\Documents\FireBase\PriceData_Out.csv";
 
             var fullFile = System.IO.File.ReadAllLines(path);
 
@@ -166,6 +203,8 @@ namespace Firebase_Connection
                 newRow["close"] = Convert.ToDouble(words[4]);
                 newRow["signal"] = "signal";
                 table.Rows.Add(newRow);
+
+                //SetTextboxTextSafe(result: words[0]);
             }
 
             dataSet.AcceptChanges();
@@ -173,7 +212,7 @@ namespace Firebase_Connection
             string json = JsonConvert.SerializeObject(dataSet, Formatting.Indented);
             
             Console.WriteLine(json);
-
+            
             return json;
         }
     }
