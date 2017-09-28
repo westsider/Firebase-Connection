@@ -24,6 +24,7 @@ namespace Firebase_Connection
         FileSystemWatcher watcher = new FileSystemWatcher();
         public string systemPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         public string publicPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Firebase";
+        public string publicPathOut = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Firebase\PriceData_Out.csv";
         public string update = "No Update Yet";
 
         public Form1()
@@ -32,15 +33,11 @@ namespace Firebase_Connection
 
             var dirName = checkForDirectory();
 
-            //MARK: - TODO - dirName to UI
             //MARK: - TODO - last file time to UI
             //lastUpdatelabel.Text = update;
 
             try
             {
-                //string dirName = @"C:\Users\MBPtrader\Documents\FireBase";
-                
-
                 CreateFileWatcher(publicPath);
                 //CreateJsonFromCSV();
             }
@@ -100,7 +97,7 @@ namespace Firebase_Connection
             RemoveDuplicatesJsonFromCSV(path: publicPath);
             System.Threading.Thread.Sleep(1000);
             Console.WriteLine("serialize datatable...");
-            var dataSet = serializeDataTable();
+            var dataSet = serializeDataTable(path: publicPathOut);
             Console.WriteLine("posting to firebase...");
             postToFireBase(jsonDataset: dataSet);
             watcher.EnableRaisingEvents = true;
@@ -108,10 +105,6 @@ namespace Firebase_Connection
 
         public static void RemoveDuplicatesJsonFromCSV(string path)
         {
-            // Not reading csv file
-            //string path = @"C:\Users\MBPtrader\Documents\FireBase\PriceData.csv";
-            //Read the csv file, and then use System.IO.File.ReadAllLines to read the JSON String format for each line 
-
             System.Threading.Thread.Sleep(2000);
 
             // remove duplicates
@@ -155,10 +148,8 @@ namespace Firebase_Connection
             await Task.Delay(3000);
             Console.WriteLine("Timer End");
         }
-        //MARK: - TODO Consider sorting Date so its consecutive on mutiple loads - remove duplicate times
-        //MARK: - TODO Universal filepath to documents
 
-        public static string serializeDataTable()
+        public static string serializeDataTable(string path)
         {
             DataSet dataSet = new DataSet("dataSet");
             dataSet.Namespace = "NetFrameWork";
@@ -167,7 +158,6 @@ namespace Firebase_Connection
             DataColumn itemColumn0 = new DataColumn("date");
             table.Columns.Add(itemColumn0);
             
-
             DataColumn itemColumn1 = new DataColumn("open");
             table.Columns.Add(itemColumn1);
 
@@ -184,9 +174,6 @@ namespace Firebase_Connection
             table.Columns.Add(itemColumn5);
 
             dataSet.Tables.Add(table);
-
-            // get csv
-   string path = @"C:\Users\MBPtrader\Documents\FireBase\PriceData_Out.csv";
 
             var fullFile = System.IO.File.ReadAllLines(path);
 
