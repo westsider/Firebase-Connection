@@ -20,6 +20,7 @@ using Newtonsoft.Json.Linq;
 //  dina cruz blog http://blog.diniscruz.com/2014/03/c-example-of-using-firebase-rest-api.html
 //  firbase in C# https://stackoverflow.com/questions/40953382/firebase-in-c-sharp-api-recommendation
 //  you can go into the properties for your project and change it to Console Application
+//  must install .NET framework 4.6 on the local machine
 
 namespace Firebase_Connection
 {
