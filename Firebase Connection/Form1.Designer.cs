@@ -30,7 +30,6 @@
         {
             this.label1 = new System.Windows.Forms.Label();
             this.dirNameLable = new System.Windows.Forms.Label();
-            this.lastUpdatelabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -52,32 +51,18 @@
             this.dirNameLable.BackColor = System.Drawing.SystemColors.Highlight;
             this.dirNameLable.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dirNameLable.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
-            this.dirNameLable.Location = new System.Drawing.Point(26, 167);
+            this.dirNameLable.Location = new System.Drawing.Point(26, 105);
             this.dirNameLable.Name = "dirNameLable";
             this.dirNameLable.Padding = new System.Windows.Forms.Padding(5);
             this.dirNameLable.Size = new System.Drawing.Size(525, 35);
             this.dirNameLable.TabIndex = 1;
             this.dirNameLable.Text = "Test filename... C:\\Users\\MBPtrader\\Documents\\FireBase";
             // 
-            // lastUpdatelabel
-            // 
-            this.lastUpdatelabel.AutoSize = true;
-            this.lastUpdatelabel.BackColor = System.Drawing.SystemColors.Highlight;
-            this.lastUpdatelabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lastUpdatelabel.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
-            this.lastUpdatelabel.Location = new System.Drawing.Point(25, 103);
-            this.lastUpdatelabel.Name = "lastUpdatelabel";
-            this.lastUpdatelabel.Padding = new System.Windows.Forms.Padding(5);
-            this.lastUpdatelabel.Size = new System.Drawing.Size(239, 42);
-            this.lastUpdatelabel.TabIndex = 2;
-            this.lastUpdatelabel.Text = "No Update, 2017";
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(612, 248);
-            this.Controls.Add(this.lastUpdatelabel);
+            this.ClientSize = new System.Drawing.Size(593, 177);
             this.Controls.Add(this.dirNameLable);
             this.Controls.Add(this.label1);
             this.Name = "Form1";
@@ -91,7 +76,6 @@
 
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label dirNameLable;
-        private System.Windows.Forms.Label lastUpdatelabel;
     }
 }
 

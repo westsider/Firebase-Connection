@@ -19,6 +19,7 @@ using Newtonsoft.Json.Linq;
 //  fire sharp unnofficial google lib https://github.com/ziyasal/FireSharp
 //  dina cruz blog http://blog.diniscruz.com/2014/03/c-example-of-using-firebase-rest-api.html
 //  firbase in C# https://stackoverflow.com/questions/40953382/firebase-in-c-sharp-api-recommendation
+//  you can go into the properties for your project and change it to Console Application
 
 namespace Firebase_Connection
 {
@@ -35,10 +36,8 @@ namespace Firebase_Connection
         public Form1()
         {
             InitializeComponent();
-
+  
             //MARK: - TODO - rename static path vars
-            //MARK: - TODO - last file time to UI
-            lastUpdatelabel.Text = update;
 
             string dirName = Task.Run(async () => { return CheckForDirectory(); }).Result;
 
@@ -52,6 +51,7 @@ namespace Firebase_Connection
                 Console.WriteLine("File Watcher Error ", ex);
             }
         }
+
 
         private string CheckForDirectory()
         {
@@ -86,12 +86,10 @@ namespace Firebase_Connection
                 request.Method = "DELETE";
                 request.ContentType = "application/json";
                 var response = request.GetResponse();
-                //System.Threading.Thread.Sleep(1000);
                 Console.WriteLine("Finish Delete");
             }
             catch (Exception ex)
             {
-                //MessageBox.Show(ex.ToString(), "File Delete Error");
                 Console.WriteLine("File Delete Error ", ex);
             }
             return "Firebase Deleted";
@@ -117,22 +115,17 @@ namespace Firebase_Connection
             Console.WriteLine("File has changed " + counter + " times");
             Console.WriteLine("Removing duplicates...");
             string removeDup = Task.Run(async () => { return RemoveDuplicatesJsonFromCSV(path: publicPath); }).Result;
-    System.Threading.Thread.Sleep(500);
+            System.Threading.Thread.Sleep(500);
             Console.WriteLine("serialize datatable...");
-
-           // var dataSet = serializeDataTable(path: publicPathOut);
             string dataSet = Task.Run(async () => { return serializeDataTable(path: publicPathOut); }).Result;
-            //Console.WriteLine("posting to firebase...");
-    System.Threading.Thread.Sleep(500);
+            System.Threading.Thread.Sleep(500);
             postToFireBase(jsonDataset: dataSet);
-            //string postFireB = Task.Run(async () => { return postToFireBase(jsonDataset: dataSet); }).Result;
             watcher.EnableRaisingEvents = true;
         }
 
         // had file delete error and post to firebase
         public string RemoveDuplicatesJsonFromCSV(string path)
         {
-            //System.Threading.Thread.Sleep(2000);
             Console.WriteLine("\nRemoving duplicates");
             try
             {
@@ -156,7 +149,6 @@ namespace Firebase_Connection
             }
             catch (Exception ex)
             {
-                //MessageBox.Show(ex.ToString(), "File Read / Write Error\nRemoveDuplicatesJsonFromCSV");
                 Console.WriteLine("\nRemove Duplicates Error ", ex);
             }
             Console.WriteLine("Duplicates Removed");
@@ -169,7 +161,6 @@ namespace Firebase_Connection
         {
             try
             {
-                
                 Console.WriteLine("\nPosting to firebase");
                 var myFirebase = "https://mtdash01.firebaseio.com/.json";
                 var request = WebRequest.CreateHttp(myFirebase);
@@ -184,8 +175,6 @@ namespace Firebase_Connection
                     Console.WriteLine("ContentLength");
                 request.GetRequestStream().Write(buffer, 0, buffer.Length);
                 Console.WriteLine("GetRequestStream");
-         //System.Threading.Thread.Sleep(10000);
-         // this is where the problem is - waiting too long to write data to firebase
                 var response = request.GetResponse();
                     Console.WriteLine("response");
                 var streamResponse = (new StreamReader(response.GetResponseStream())).ReadToEnd();
@@ -194,11 +183,8 @@ namespace Firebase_Connection
             }
             catch (Exception ex)
             {
-                //MessageBox.Show(ex.ToString(), "File Read / Write Error\nRemoveDuplicatesJsonFromCSV");
                 Console.WriteLine("\nPost to Firebase Error\n", ex);
             }
-            
-            //return "Post completed";
         }
 
         public string serializeDataTable(string path)
