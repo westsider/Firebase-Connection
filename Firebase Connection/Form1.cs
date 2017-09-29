@@ -15,6 +15,11 @@ using System.Net;
 using Newtonsoft;
 using Newtonsoft.Json.Linq;
 
+//  inspiration for this firebase app
+//  fire sharp unnofficial google lib https://github.com/ziyasal/FireSharp
+//  dina cruz blog http://blog.diniscruz.com/2014/03/c-example-of-using-firebase-rest-api.html
+//  firbase in C# https://stackoverflow.com/questions/40953382/firebase-in-c-sharp-api-recommendation
+
 namespace Firebase_Connection
 {
 
@@ -31,24 +36,21 @@ namespace Firebase_Connection
         {
             InitializeComponent();
 
+            //MARK: - TODO - rename static path vars
             //MARK: - TODO - last file time to UI
             lastUpdatelabel.Text = update;
 
             string dirName = Task.Run(async () => { return CheckForDirectory(); }).Result;
 
-            string astring = Task.Run(async () => { return YourAsyncMethod(); }).Result;
-
-            //MARK: - TODO - rename static path vars
-            //MARK: - TODO - use completion handlers
-            //try
-            //{
-            //    CreateFileWatcher(publicPath);
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show(ex.ToString(), "File Watcher Error");
-            //    Console.WriteLine("File Watcher Error ", ex);
-            //}
+            try
+            {
+                CreateFileWatcher(publicPath);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "File Watcher Error");
+                Console.WriteLine("File Watcher Error ", ex);
+            }
         }
 
         private string CheckForDirectory()
@@ -70,45 +72,31 @@ namespace Firebase_Connection
                 }
 
                 dirNameLable.Text = systemPath + @"\Firebase";
-                //System.Threading.Thread.Sleep(1000);
-                Console.WriteLine("Directory check finished\n");
+                Console.WriteLine("Directory check finished");
                 return systemPath + @"\Firebase";
         }
 
-        private string YourAsyncMethod()
-        {
-            Console.WriteLine("In next Function");
-            return "Next Function Completed";
-        }
-
-        public void deleteFirebase()
+        public string deleteFirebase()
         {
             try
             {
-                Console.WriteLine("Start Delete");
+                Console.WriteLine("\nStart Delete");
                 var myFirebase = "https://mtdash01.firebaseio.com/.json";
                 var request = WebRequest.CreateHttp(myFirebase);
                 request.Method = "DELETE";
                 request.ContentType = "application/json";
                 var response = request.GetResponse();
-                System.Threading.Thread.Sleep(2000);
+                //System.Threading.Thread.Sleep(1000);
                 Console.WriteLine("Finish Delete");
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), "File Delete Error");
+                //MessageBox.Show(ex.ToString(), "File Delete Error");
                 Console.WriteLine("File Delete Error ", ex);
             }
-            
+            return "Firebase Deleted";
 
         }
-        public void SetTextboxTextSafe(string result)
-        {
-            Console.WriteLine("\nCalling SetTetBox " + result);
-            lastUpdatelabel.Text = result.ToString();
-        }
-
-
 
         //MARK: - File Watcher
         public void CreateFileWatcher(string path)
@@ -123,29 +111,33 @@ namespace Firebase_Connection
 
         private void OnChanged(object source, FileSystemEventArgs e)
         {
-            deleteFirebase();
+            string delFirebase = Task.Run(async () => { return deleteFirebase(); }).Result;
             watcher.EnableRaisingEvents = false;
             counter = counter + 1;
             Console.WriteLine("File has changed " + counter + " times");
-            System.Threading.Thread.Sleep(1000);
             Console.WriteLine("Removing duplicates...");
-            RemoveDuplicatesJsonFromCSV(path: publicPath);
-            System.Threading.Thread.Sleep(1000);
+            string removeDup = Task.Run(async () => { return RemoveDuplicatesJsonFromCSV(path: publicPath); }).Result;
+    System.Threading.Thread.Sleep(500);
             Console.WriteLine("serialize datatable...");
-            var dataSet = serializeDataTable(path: publicPathOut);
-            Console.WriteLine("posting to firebase...");
+
+           // var dataSet = serializeDataTable(path: publicPathOut);
+            string dataSet = Task.Run(async () => { return serializeDataTable(path: publicPathOut); }).Result;
+            //Console.WriteLine("posting to firebase...");
+    System.Threading.Thread.Sleep(500);
             postToFireBase(jsonDataset: dataSet);
+            //string postFireB = Task.Run(async () => { return postToFireBase(jsonDataset: dataSet); }).Result;
             watcher.EnableRaisingEvents = true;
         }
 
-        public static void RemoveDuplicatesJsonFromCSV(string path)
+        // had file delete error and post to firebase
+        public string RemoveDuplicatesJsonFromCSV(string path)
         {
-            System.Threading.Thread.Sleep(2000);
-
+            //System.Threading.Thread.Sleep(2000);
+            Console.WriteLine("\nRemoving duplicates");
             try
             {
                 var sr = new StreamReader(File.OpenRead(path + @"\PriceData.csv"));
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(500);
                 var sw = new StreamWriter(File.OpenWrite(path + @"\PriceData_Out.csv"));
                 var lines = new HashSet<int>();
                 while (!sr.EndOfStream)
@@ -164,39 +156,54 @@ namespace Firebase_Connection
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), "File Read / Write Error\nRemoveDuplicatesJsonFromCSV");
-                Console.WriteLine("Error ", ex);
+                //MessageBox.Show(ex.ToString(), "File Read / Write Error\nRemoveDuplicatesJsonFromCSV");
+                Console.WriteLine("\nRemove Duplicates Error ", ex);
             }
-
-            
+            Console.WriteLine("Duplicates Removed");
+            return "Duplicates removed";
             
         }
 
         //MARK: -  Upload to Firebase
-        public static void postToFireBase(string jsonDataset)
+        public void postToFireBase(string jsonDataset)
         {
-            var myFirebase = "https://mtdash01.firebaseio.com/.json";
-            var request = WebRequest.CreateHttp(myFirebase);
-            request.Method = "POST";
-            request.ContentType = "application/json";
-            var buffer = Encoding.UTF8.GetBytes(jsonDataset);
-            request.ContentLength = buffer.Length;
-            request.GetRequestStream().Write(buffer, 0, buffer.Length);
-            var response = request.GetResponse();
-            var streamResponse = (new StreamReader(response.GetResponseStream())).ReadToEnd();
-            Console.WriteLine(response);
-            Console.WriteLine(streamResponse);
+            try
+            {
+                
+                Console.WriteLine("\nPosting to firebase");
+                var myFirebase = "https://mtdash01.firebaseio.com/.json";
+                var request = WebRequest.CreateHttp(myFirebase);
+                    Console.WriteLine("request");
+                request.Method = "POST";
+                    Console.WriteLine("POST");
+                request.ContentType = "application/json";
+                    Console.WriteLine("application/json");
+                var buffer = Encoding.UTF8.GetBytes(jsonDataset);
+                    Console.WriteLine("buffer");
+                request.ContentLength = buffer.Length;
+                    Console.WriteLine("ContentLength");
+                request.GetRequestStream().Write(buffer, 0, buffer.Length);
+                Console.WriteLine("GetRequestStream");
+         //System.Threading.Thread.Sleep(10000);
+         // this is where the problem is - waiting too long to write data to firebase
+                var response = request.GetResponse();
+                    Console.WriteLine("response");
+                var streamResponse = (new StreamReader(response.GetResponseStream())).ReadToEnd();
+                Console.WriteLine(response);
+                Console.WriteLine(streamResponse);
+            }
+            catch (Exception ex)
+            {
+                //MessageBox.Show(ex.ToString(), "File Read / Write Error\nRemoveDuplicatesJsonFromCSV");
+                Console.WriteLine("\nPost to Firebase Error\n", ex);
+            }
+            
+            //return "Post completed";
         }
 
-        private async void theTimer()
+        public string serializeDataTable(string path)
         {
-            Console.WriteLine("Timer Start");
-            await Task.Delay(3000);
-            Console.WriteLine("Timer End");
-        }
-
-        public static string serializeDataTable(string path)
-        {
+            Console.WriteLine("\nserializeDataTable");
             DataSet dataSet = new DataSet("dataSet");
             dataSet.Namespace = "NetFrameWork";
             DataTable table = new DataTable();
@@ -225,7 +232,7 @@ namespace Firebase_Connection
 
             foreach (string row in fullFile)
             {
-                Console.WriteLine(row);
+                //Console.WriteLine(row);
                 string[] words = row.Split(',');
 
                 DataRow newRow = table.NewRow();
@@ -236,20 +243,11 @@ namespace Firebase_Connection
                 newRow["close"] = Convert.ToDouble(words[4]);
                 newRow["signal"] = "signal";
                 table.Rows.Add(newRow);
-
-                //Form1 frm1 = new Form1();
-                //frm1.SetTextboxTextSafe(words[0]);
-                //SetTextboxTextSafe(result: words[0]);
             }
 
             dataSet.AcceptChanges();
             
             string json = JsonConvert.SerializeObject(dataSet, Formatting.Indented);
-            
-            Console.WriteLine(json);
-
-            //SetTextboxTextSafe(result: "");
-
             return json;
         }
     }
